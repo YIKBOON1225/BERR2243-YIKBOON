@@ -6,12 +6,13 @@ async function run() {
 
   try {
     await client.connect();
-    console.log("✅ Connected to MongoDB!");
+    console.log(" Connected to MongoDB!");
   } catch (err) {
-    console.error("❌ Connection failed:", err);
+    console.error(" Connection failed:", err);
   } finally {
     await client.close();
   }
 }
 
 run();
+//mongod --dbpath /data/db --bind_ip 127.0.0.1 --port 27017
