@@ -58,10 +58,14 @@ async function main()
         const result = await drivercollection.insertMany(driver);
         console.log(`New driver created with result: ${result}`);
         
-        const availableDrivers = await db.collection('driver').find({
-             isAvailable: true, rating: { $gte: 4.5} 
-            }).toArray();
-        console.log("Available drivers:", availableDrivers);
+        const updateResult = await db.collection('driver').updateOne( { name: "John Doe" },
+        { $inc: { rating: -1}});
+        console.log(`Driver updated with result: ${updateResult}`);
+
+        // const availableDrivers = await db.collection('driver').find({
+        //      isAvailable: true, rating: { $gte: 4.5} 
+        //     }).toArray();
+        // console.log("Available drivers:", availableDrivers);
 
     }
     
