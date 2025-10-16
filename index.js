@@ -1,6 +1,6 @@
 const { MongoClient } = require('mongodb');
 
-const drivers = 
+const driver = 
 [
     {
         name: "John Doe",
@@ -17,14 +17,14 @@ const drivers =
 ];
 
 // show the data in the console
-console.log(drivers);
+console.log(driver);
 
 // TODO: show the all the drivers name in the console
 console.log("Driver names:");
-drivers.forEach(driver => console.log(driver.name));
+driver.forEach(driver => console.log(driver.name));
 
 // TODO: add additional driver to the drivers array
-drivers.push({
+driver.push({
   name: "YIK BOON",
   vehicleType: "SUV",
   isAvailable: true,
@@ -32,34 +32,39 @@ drivers.push({
 });
 
 // show the data in the console
-console.log(drivers);
+console.log(driver);
 
 async function main()
 {
-    const start = Date.now();
+    //show time operation
+    //const start = Date.now();
+
     const uri = "mongodb://127.0.0.1:27017";
     const client = new MongoClient(uri);
     try 
     {
         await client.connect();
 
-        const duration  = Date.now() - start;
-        console.log(`Connected to MongoDB! (${duration} ms)`);
+        //show time operation
+        //const duration  = Date.now() - start;
+        //console.log(`Connected to MongoDB! (${duration} ms)`);
 
 
         const db = client.db("testDB");
-        const collection = db.collection("users");
-            // Insert a document
-        await collection.insertOne({ name: "YIK BOON", age: 22 });
-        console.log("Document inserted!");
-            // Query the document
-        const result = await collection.findOne({ name: "YIK BOON" });
-        console.log("Query result:", result);
-} 
+        const drivercollection = db.collection("driver");
+        // Insert a document
+        
+    
+        const result = await drivercollection.insertMany(driver);
+        console.log(`New driver created with result: ${result}`);
+        
+    }
+    
     catch (err) 
     {
-        console.error("Error:", err);
+    console.error("Error:", err);
     } 
+
     finally 
     {
         await client.close();
