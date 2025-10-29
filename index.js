@@ -55,12 +55,14 @@ async function main()
         // Insert a document
         
     
-        const result = await drivercollection.insertMany(driver);
-        console.log(`New driver created with result: ${result}`);
+        //const result = await drivercollection.insertMany(driver);
+        //console.log(`New driver created with result: ${result}`);
         
-        const updateResult = await db.collection('driver').updateOne( { name: "John Doe" },
-        { $inc: { rating: -1}});
-        console.log(`Driver updated with result: ${updateResult}`);
+        //const updateResult = await db.collection('driver').updateMany({vehicleType: "SUV"},{ $inc: { rating: 0.1}});
+        //console.log(`Driver updated with result: ${updateResult}`);
+
+        const deleteResult = await db.collection('driver').deleteMany({isAvailable:{$eq: true }});
+        console.log(`Driver deleted with result: ${deleteResult}`);
 
         // const availableDrivers = await db.collection('driver').find({
         //      isAvailable: true, rating: { $gte: 4.5} 
