@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Rides Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; background: #f8fafc; }
+    h1 { color: #2563eb; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 8px; }
+    th { background-color: #2563eb; color: white; }
+    tr:nth-child(even) { background-color: #f2f2f2; }
+    input, select, button { padding: 6px; margin: 4px; border-radius: 4px; border: 1px solid #ccc; }
+    button { background: #2563eb; color: white; cursor: pointer; }
+    button:hover { background: #1d4ed8; }
+    .delete { background: #dc2626; }
+    .delete:hover { background: #b91c1c; }
+    .success { color: green; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+  <h1>🚗 Rides Management Dashboard</h1>
+  <p>API base URL: <b>http://localhost:3000/rides</b></p>
+
+  <div>
+    <h3>Create New Ride</h3>
+    <input type="text" id="pickupLocation" placeholder="Pickup Location">
+    <input type="text" id="destination" placeholder="Destination">
+    <input type="text" id="driverId" placeholder="Driver ID">
+    <select id="status">
+      <option value="requested">requested</option>
+      <option value="accepted">accepted</option>
+      <option value="cancelled">cancelled</option>
+      <option value="completed">completed</option>
+    </select>
+    <button onclick="createRide()">Add Ride</button>
+  </div>
+
+  <h3>All Rides</h3>
+  <table id="ridesTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Pickup</th>
+        <th>Destination</th>
+        <th>Driver</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="ridesBody"></tbody>
+  </table>
+
+  <p id="message"></p>
+
+  <script>
+    const API = "http://localhost:3000/rides";
+    const message = document.getElementById("message");
+
+    async function loadRides() {
+      try {
+        const res = await fetch(API);
+        const rides = await res.json();
+        const tbody = document.getElementById("ridesBody");
+        tbody.innerHTML = "";
+        rides.forEach(r => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${r._id}</td>
+            <td>${r.pickupLocation || "-"}</td>
+            <td>${r.destination || "-"}</td>
+            <td>${r.driverId || "-"}</td>
+            <td>
+              <select onchange="updateRide('${r._id}', this.value)">
+                <option ${r.status === 'requested' ? 'selected' : ''}>requested</option>
+                <option ${r.status === 'accepted' ? 'selected' : ''}>accepted</option>
+                <option ${r.status === 'cancelled' ? 'selected' : ''}>cancelled</option>
+                <option ${r.status === 'completed' ? 'selected' : ''}>completed</option>
+              </select>
+            </td>
+            <td><button class="delete" onclick="deleteRide('${r._id}')">Delete</button></td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        message.innerHTML = `<p class="error">Failed to load rides</p>`;
+      }
+    }
+
+    async function createRide() {
+      const ride = {
+        pickupLocation: document.getElementById("pickupLocation").value,
+        destination: document.getElementById("destination").value,
+        driverId: document.getElementById("driverId").value,
+        status: document.getElementById("status").value
+      };
+      try {
+        const res = await fetch(API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(ride)
+        });
+        if (res.ok) {
+          message.innerHTML = `<p class="success">Ride added successfully!</p>`;
+          loadRides();
+        } else {
+          message.innerHTML = `<p class="error">Failed to add ride</p>`;
+        }
+      } catch (err) {
+        message.innerHTML = `<p class="error">Error: ${err}</p>`;
+      }
+    }
+
+    async function updateRide(id, newStatus) {
+      try {
+        const res = await fetch(`${API}/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus })
+        });
+        if (res.ok) {
+          message.innerHTML = `<p class="success">Ride status updated!</p>`;
+        } else {
+          message.innerHTML = `<p class="error">Failed to update ride</p>`;
+        }
+      } catch (err) {
+        message.innerHTML = `<p class="error">${err}</p>`;
+      }
+    }
+
+    async function deleteRide(id) {
+      if (!confirm("Delete this ride?")) return;
+      try {
+        const res = await fetch(`${API}/${id}`, { method: "DELETE" });
+        if (res.ok) {
+          message.innerHTML = `<p class="success">Ride deleted!</p>`;
+          loadRides();
+        } else {
+          message.innerHTML = `<p class="error">Failed to delete ride</p>`;
+        }
+      } catch (err) {
+        message.innerHTML = `<p class="error">${err}</p>`;
+      }
+    }
+
+    loadRides();
+  </script>
+</body>
+</html>
