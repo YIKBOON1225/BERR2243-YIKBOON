@@ -62,6 +62,13 @@ app.patch('/rides/:id', async (req, res) =>
 {
     try 
     {
+        const id = req.params.id;
+
+        //validate objectid format
+        if(!ObjectId.isValid(id))
+        {
+            return res.status(400).json({error:"Invalid ride id format"});
+        }
         const result = await db.collection('rides').updateOne(
             {_id: new ObjectId(req.params.id)},
             { $set: { status: req.body.status } }
@@ -75,8 +82,8 @@ app.patch('/rides/:id', async (req, res) =>
     }
     catch (err) 
     {
-        // Handle invalid ID format or DB errors
-        res.status(400).json({ error: "Invalid ride ID or data"}); 
+        console.error("PATCH /rides error:",err)
+        res.status(500).json({ error: "Failed to update ride"}); 
     }
 });
 
@@ -85,6 +92,13 @@ app.delete('/rides/:id', async (req, res) =>
 {
     try
     {
+        const id = req.params.id;
+        //validate objectid format
+        if(!ObjectId.isValid(id))
+        {
+            return res.status(400).json({error:"Invalid ride id format"});
+        }
+
         const result = await db.collection('rides').deleteOne(      
             {_id: new ObjectId(req.params.id) } 
         );
@@ -97,7 +111,8 @@ app.delete('/rides/:id', async (req, res) =>
     }
     catch (err) 
     {
-        res.status(400).json({ error: "Invalid ride ID" });
+        console.error("DELETE /rides error:",err);
+        res.status(500).json({ error: "Failed to delete ride" });
     }
 });
 

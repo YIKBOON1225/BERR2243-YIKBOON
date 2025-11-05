@@ -1,0 +1,73 @@
+const express = require('express');
+const { MongoClient, ObjectId } = require('mongodb');
+const port = 3000;
+const app = express();
+
+app.use(express.json());
+let db;
+
+async function connectToMongoDB() {
+    const uri = "mongodb://localhost:27017";
+    const client = new MongoClient(uri);
+    try {
+        await client.connect();
+        console.log("Connected to MongoDB!");
+        db = client.db("testDB");
+    } catch (err) {
+        console.error("Error:", err);
+    }
+}
+connectToMongoDB();
+
+app.listen(port, () => console.log(`Server running on port ${port}`));
+
+/* --- CRUD endpoints for users --- */
+
+// CREATE (POST)
+app.post('/users', async (req, res) => {
+    try {
+        const result = await db.collection('users').insertOne(req.body);
+        res.status(201).json({ id: result.insertedId });
+    } catch (err) {
+        res.status(400).json({ error: "Invalid user data" });
+    }
+});
+
+// READ (GET all)
+app.get('/users', async (req, res) => {
+    try {
+        const users = await db.collection('users').find().toArray();
+        res.status(200).json(users);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch users" });
+    }
+});
+
+// UPDATE (PATCH by ID)
+app.patch('/users/:id', async (req, res) => {
+    try {
+        const result = await db.collection('users').updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { $set: req.body }
+        );
+        if (result.modifiedCount === 0)
+            return res.status(404).json({ error: "User not found" });
+        res.status(200).json({ updated: result.modifiedCount });
+    } catch (err) {
+        res.status(400).json({ error: "Invalid user ID or data" });
+    }
+});
+
+// DELETE (by ID)
+app.delete('/users/:id', async (req, res) => {
+    try {
+        const result = await db.collection('users').deleteOne({
+            _id: new ObjectId(req.params.id)
+        });
+        if (result.deletedCount === 0)
+            return res.status(404).json({ error: "User not found" });
+        res.status(200).json({ deleted: result.deletedCount });
+    } catch (err) {
+        res.status(400).json({ error: "Invalid user ID" });
+    }
+});
